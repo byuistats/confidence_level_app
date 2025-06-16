@@ -1,33 +1,17 @@
-# Normal Distribution App
+# Normal Distribution Applet
 
-This project is a JavaScript application that visualizes the standard normal distribution curve. It allows users to interactively drag a critical value and see the corresponding areas under the curve dynamically updated.
-
-## Features
-
-- Visual representation of the standard normal distribution.
-- Interactive dragging of the critical value to adjust shaded areas.
-- Shaded regions representing the tails and the confidence interval.
-
-## Technologies Used
-
-- React: For building the user interface.
-- D3.js or Chart.js: For rendering the normal distribution curve.
-- CSS: For styling the application.
+This project is a simple JavaScript applet that visualizes the standard normal distribution and allows users to adjust the critical value for shading the tails of the distribution.
 
 ## Project Structure
 
 ```
-normal-dist-app
+normal-dist-applet
 ├── src
-│   ├── index.js          # Entry point of the application
-│   ├── components
-│   │   └── NormalCurve.js # Component for rendering the normal curve
-│   └── styles
-│       └── main.css      # Styles for the application
-├── public
-│   └── index.html        # Main HTML file
-├── package.json          # npm configuration file
-└── README.md             # Project documentation
+│   ├── index.html       # Main HTML document
+│   ├── app.js          # JavaScript code for generating the plot
+│   └── style.css       # Styles for the applet
+├── package.json        # npm configuration file
+└── README.md           # Project documentation
 ```
 
 ## Installation
@@ -35,27 +19,25 @@ normal-dist-app
 1. Clone the repository:
    ```
    git clone <repository-url>
+   cd normal-dist-applet
    ```
-2. Navigate to the project directory:
-   ```
-   cd normal-dist-app
-   ```
-3. Install the dependencies:
+
+2. Install the dependencies:
    ```
    npm install
    ```
 
 ## Usage
 
-To start the application, run:
-```
-npm start
-```
-This will launch the app in your default web browser.
+1. Open `src/index.html` in a web browser to view the applet.
+2. Adjust the critical value using the input field to see how the plot updates.
+3. The shaded areas represent the tails of the distribution beyond the critical value, with the confidence interval highlighted.
 
-## Contributing
+## Functionality
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
+- The applet visualizes the standard normal distribution curve.
+- Users can input a critical value to dynamically adjust the plot.
+- The tails of the distribution are shaded to indicate areas beyond the critical value, with a confidence interval highlighted in blue.
 
 ## License
 
