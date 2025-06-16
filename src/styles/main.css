@@ -1,0 +1,46 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.normal-curve-container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.drag-handle {
+    cursor: pointer;
+    fill: blue;
+}
+
+.area-red {
+    fill: red;
+    opacity: 0.3;
+}
+
+.area-blue {
+    fill: blue;
+    opacity: 0.3;
+}
+
+.axis {
+    font-size: 12px;
+    fill: #666;
+}
+
+.text-label {
+    font-size: 14px;
+    font-weight: bold;
+    fill: black;
+}
