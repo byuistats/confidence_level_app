@@ -2,7 +2,7 @@
 function generateData() {
     const x = [];
     const y = [];
-    for (let i = -4; i <= 4; i += 0.01) {
+    for (let i = -5; i <= 5; i += 0.01) {
         x.push(i);
         y.push((1/Math.sqrt(2*Math.PI))*Math.exp(-0.5*i*i));
     }
@@ -17,7 +17,7 @@ const x = [];
 const y = [];
 const N = 1000;
 for (let i = 0; i < N; i++) {
-  let xi = -4 + (8 * i) / (N - 1); // Now from -4 to 4
+  let xi = -5 + (10 * i) / (N - 1); // Now from -5 to 4
   x.push(xi);
   y.push(normalDensity(xi));
 }
@@ -150,8 +150,8 @@ function drawChart(crit) {
         x: {
           type: 'linear', // <-- Add this line
           title: { display: true, text: 'z-score' },
-          min: -4,
-          max: 4,
+          min: -5,
+          max: 5,
           ticks: {
             stepSize: 1,
             callback: function(value) {
@@ -260,6 +260,10 @@ document.getElementById('tTab').onclick = function() {
   document.getElementById('normalTab').classList.remove('active');
   document.getElementById('tContent').classList.remove('hidden');
   document.getElementById('normalContent').classList.add('hidden');
+  // Force redraw of tChart
+  if (typeof drawTChart === 'function') {
+    drawTChart(tCritValue, tDf);
+  }
 };
 
 // --- Student's t-distribution logic ---
@@ -367,12 +371,11 @@ function drawTChart(crit, df) {
       responsive: false,
       animation: false,
       plugins: {
-        legend: { display: false }, // Hide the legend
+        legend: { display: false },
         title: {
           display: true,
           text: `Student's t-Distribution (df = ${df}) with Tails Beyond ±${crit.toFixed(2)}`,
-        },
-        // Add annotation plugin if needed
+        }
       },
       scales: {
         x: {
@@ -402,6 +405,8 @@ function drawTChart(crit, df) {
           const ctx = chart.ctx;
           const xAxis = chart.scales.x;
           const yAxis = chart.scales.y;
+          const yMax = yAxis.max || 0.45;
+
           ctx.save();
 
           // % Confidence in the center
@@ -412,7 +417,7 @@ function drawTChart(crit, df) {
           ctx.fillText(
             `${confPct}% Confidence`,
             xAxis.getPixelForValue(0),
-            yAxis.getPixelForValue(0.042)
+            yAxis.getPixelForValue(yMax * 0.93)
           );
 
           // Area under the curve (center)
@@ -422,23 +427,7 @@ function drawTChart(crit, df) {
           ctx.fillText(
             `Area: ${(tCdf(tCritValue, tDf) - tCdf(-tCritValue, tDf)).toFixed(3)}`,
             xAxis.getPixelForValue(0),
-            yAxis.getPixelForValue(0.38)
-          );
-
-          // Area under the left tail
-          ctx.fillStyle = 'red';
-          ctx.textAlign = 'left';
-          ctx.fillText(
-            `Tail: ${tCdf(-tCritValue, tDf).toFixed(3)}`,
-            xAxis.getPixelForValue(-4.5),
-            yAxis.getPixelForValue(0.025)
-          );
-          // Area under the right tail
-          ctx.textAlign = 'right';
-          ctx.fillText(
-            `Tail: ${tCdf(-tCritValue, tDf).toFixed(3)}`,
-            xAxis.getPixelForValue(4.5),
-            yAxis.getPixelForValue(0.025)
+            yAxis.getPixelForValue(yMax * 0.85)
           );
 
           // Label -tCritValue
@@ -448,7 +437,7 @@ function drawTChart(crit, df) {
           ctx.fillText(
             `-t = ${tCritValue.toFixed(2)}`,
             xAxis.getPixelForValue(-tCritValue) - 5,
-            yAxis.getPixelForValue(0.43)
+            yAxis.getPixelForValue(yMax * 0.80)
           );
 
           // Label +tCritValue
@@ -456,9 +445,34 @@ function drawTChart(crit, df) {
           ctx.fillText(
             `t = ${tCritValue.toFixed(2)}`,
             xAxis.getPixelForValue(tCritValue) + 5,
-            yAxis.getPixelForValue(0.43)
+            yAxis.getPixelForValue(yMax * 0.80)
           );
 
+          // Area under the left tail
+          ctx.fillStyle = 'red';
+          ctx.textAlign = 'left';
+          ctx.fillText(
+            `Tail: ${tCdf(-tCritValue, tDf).toFixed(3)}`,
+            xAxis.getPixelForValue(-4.5),
+            yAxis.getPixelForValue(yMax * 0.15)
+          );
+          // Area under the right tail
+          ctx.textAlign = 'right';
+          ctx.fillText(
+            `Tail: ${tCdf(-tCritValue, tDf).toFixed(3)}`,
+            xAxis.getPixelForValue(4.5),
+            yAxis.getPixelForValue(yMax * 0.15)
+          );
+
+          // Tail Area labels
+          ctx.font = 'bold 14px Arial';
+          ctx.fillStyle = 'red';
+          ctx.textAlign = 'left';
+          ctx.fillText(
+            'Tail Area',
+            xAxis.getPixelForValue(-4.5),
+            yAxis.getPixelForValue(yMax * 0.08)
+          );
           ctx.restore();
         }
       }]
@@ -508,3 +522,63 @@ tSlider.addEventListener('input', function () {
 
 // Initial draw
 drawTChart(tCritValue, tDf);
+
+const customAnnotationsT = {
+  id: 'custom-annotations-t',
+  afterDraw: (chart) => {
+    const ctx = chart.ctx;
+    const xAxis = chart.scales.x;
+    const yAxis = chart.scales.y;
+    const yMax = yAxis.max || 0.45;
+
+    ctx.save();
+
+    // % Confidence in the center
+    ctx.font = 'bold 16px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
+    const confPct = (100 * (tCdf(tCritValue, tDf) - tCdf(-tCritValue, tDf))).toFixed(1);
+    ctx.fillText(
+      `${confPct}% Confidence`,
+      xAxis.getPixelForValue(0),
+      yAxis.getPixelForValue(yMax * 0.93)
+    );
+
+    // Label -tCritValue
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'blue';
+    ctx.textAlign = 'right';
+    ctx.fillText(
+      `-t = ${tCritValue.toFixed(2)}`,
+      xAxis.getPixelForValue(-tCritValue) - 5,
+      yAxis.getPixelForValue(yMax * 0.80)
+    );
+
+    // Label +tCritValue
+    ctx.textAlign = 'left';
+    ctx.fillText(
+      `t = ${tCritValue.toFixed(2)}`,
+      xAxis.getPixelForValue(tCritValue) + 5,
+      yAxis.getPixelForValue(yMax * 0.80)
+    );
+
+    // Area under the left tail
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'left';
+    ctx.fillText(
+      `${tCdf(-tCritValue, tDf).toFixed(3)}`,
+      xAxis.getPixelForValue(-4.5),
+      yAxis.getPixelForValue(yMax * 0.15)
+    );
+    // Area under the right tail
+    ctx.textAlign = 'right';
+    ctx.fillText(
+      `${tCdf(-tCritValue, tDf).toFixed(3)}`,
+      xAxis.getPixelForValue(4.5),
+      yAxis.getPixelForValue(yMax * 0.15)
+    );
+
+    ctx.restore();
+  }
+};
+Chart.register(customAnnotationsT);
