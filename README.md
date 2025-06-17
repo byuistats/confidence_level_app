@@ -1,43 +1,47 @@
-# Normal Distribution Applet
+# Distribution Confidence Applet
 
-This project is a simple JavaScript applet that visualizes the standard normal distribution and allows users to adjust the critical value for shading the tails of the distribution.
+This interactive web app visualizes confidence intervals for both the standard normal distribution and the Student's t-distribution. Users can adjust the confidence level, critical value, and (for the t-distribution) degrees of freedom, and see the corresponding shaded areas and probabilities.
 
-## Project Structure
+## Features
 
-```
-normal-dist-applet
-├── src
-│   ├── index.html       # Main HTML document
-│   ├── app.js          # JavaScript code for generating the plot
-│   └── style.css       # Styles for the applet
-├── package.json        # npm configuration file
-└── README.md           # Project documentation
-```
-
-## Installation
-
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   cd normal-dist-applet
-   ```
-
-2. Install the dependencies:
-   ```
-   npm install
-   ```
+- **Tabbed interface:** Switch between the Normal and Student's t-distributions.
+- **Normal Distribution Tab:**
+  - Adjust confidence level (%).
+  - Adjust critical value (z) with a slider.
+  - See shaded confidence region and tails.
+  - Labels for confidence percentage, tail areas, and critical values.
+- **Student's t-Distribution Tab:**
+  - Adjust confidence level (%).
+  - Adjust degrees of freedom (1–500).
+  - Adjust critical value (t) with a slider.
+  - See shaded confidence region and tails.
+  - Labels for confidence percentage, area under the curve, tail areas, and critical values (labeled as `-t = ...` and `t = ...`).
 
 ## Usage
 
-1. Open `src/index.html` in a web browser to view the applet.
-2. Adjust the critical value using the input field to see how the plot updates.
-3. The shaded areas represent the tails of the distribution beyond the critical value, with the confidence interval highlighted.
+1. **Use the GitHub link:  https://byuistats.github.io/confidence_level_app/**
+2. **Clone or download this repository.**
+3. **Open `index.html` in your web browser.**
+   - No server or build step is required.
 
-## Functionality
+## Dependencies
 
-- The applet visualizes the standard normal distribution curve.
-- Users can input a critical value to dynamically adjust the plot.
-- The tails of the distribution are shaded to indicate areas beyond the critical value, with a confidence interval highlighted in blue.
+- [Chart.js](https://www.chartjs.org/) (via CDN)
+- [jStat](https://github.com/jstat/jstat) (via CDN) for accurate t-distribution calculations
+
+## File Structure
+
+```
+index.html
+script.js
+style.css
+README.md
+```
+
+## Customization
+
+- You can adjust the axis ranges, colors, and label positions in `script.js` as needed.
+- The app is designed for teaching and demonstration purposes.
 
 ## License
 
