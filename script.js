@@ -120,7 +120,7 @@ function drawChart(crit) {
       responsive: false,
       animation: false, // <-- Add this line to turn off animation
       plugins: {
-        legend: { display: false },
+        legend: { display: false }, // This hides the legend
         title: {
           display: true,
           text: `Standard Normal Distribution with Tails Colored Beyond ±${crit.toFixed(2)} SD`,
@@ -156,7 +156,7 @@ function drawChart(crit) {
             stepSize: 1,
             callback: function(value) {
               // Only show ticks at -4, -3, -2, -1, 0, 1, 2, 3, 4, rounded to 0 decimals
-              if ([-4, -3, -2, -1, 0, 1, 2, 3, 4].includes(value)) {
+              if ([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].includes(value)) {
                 return Math.round(value).toString();
               }
               return '';
@@ -302,7 +302,7 @@ function getTData(df) {
   const tx = [], ty = [];
   const N = 1000;
   for (let i = 0; i < N; i++) {
-    let xi = -4 + (8 * i) / (N - 1);
+    let xi = -5 + (10 * i) / (N - 1); // Now from -5 to 5
     tx.push(xi);
     ty.push(tDensity(xi, df));
   }
@@ -367,22 +367,23 @@ function drawTChart(crit, df) {
       responsive: false,
       animation: false,
       plugins: {
-        legend: { display: false },
+        legend: { display: false }, // Hide the legend
         title: {
           display: true,
           text: `Student's t-Distribution (df = ${df}) with Tails Beyond ±${crit.toFixed(2)}`,
         },
+        // Add annotation plugin if needed
       },
       scales: {
         x: {
           type: 'linear',
           title: { display: true, text: 't-score' },
-          min: -4,
-          max: 4,
+          min: -5,
+          max: 5,
           ticks: {
             stepSize: 1,
             callback: function(value) {
-              if ([-4, -3, -2, -1, 0, 1, 2, 3, 4].includes(value)) {
+              if ([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].includes(value)) {
                 return Math.round(value).toString();
               }
               return '';
@@ -402,37 +403,44 @@ function drawTChart(crit, df) {
           const xAxis = chart.scales.x;
           const yAxis = chart.scales.y;
           ctx.save();
+
+          // % Confidence in the center
           ctx.font = 'bold 16px Arial';
           ctx.fillStyle = 'black';
           ctx.textAlign = 'center';
+          const confPct = (100 * (tCdf(tCritValue, tDf) - tCdf(-tCritValue, tDf))).toFixed(1);
           ctx.fillText(
-            `${(100 * (1 - 2 * (1 - tCdf(crit, df)))).toFixed(1)}% Confidence`,
+            `${confPct}% Confidence`,
             xAxis.getPixelForValue(0),
-            yAxis.getPixelForValue(0.42)
+            yAxis.getPixelForValue(0.042)
           );
+
+          // Area under the curve (center)
           ctx.font = '14px Arial';
           ctx.fillStyle = 'blue';
+          ctx.textAlign = 'center';
           ctx.fillText(
-            `-${crit.toFixed(2)}`,
-            xAxis.getPixelForValue(-crit) - 20,
-            yAxis.getPixelForValue(0.43)
+            `Area: ${(tCdf(tCritValue, tDf) - tCdf(-tCritValue, tDf)).toFixed(3)}`,
+            xAxis.getPixelForValue(0),
+            yAxis.getPixelForValue(0.38)
           );
-          ctx.fillText(
-            `${crit.toFixed(2)}`,
-            xAxis.getPixelForValue(crit) + 20,
-            yAxis.getPixelForValue(0.43)
-          );
+
+          // Area under the left tail
           ctx.fillStyle = 'red';
+          ctx.textAlign = 'left';
           ctx.fillText(
-            (tCdf(-crit, df)).toFixed(3),
-            xAxis.getPixelForValue(-3),
+            `Tail: ${tCdf(-tCritValue, tDf).toFixed(3)}`,
+            xAxis.getPixelForValue(-4.5),
             yAxis.getPixelForValue(0.025)
           );
+          // Area under the right tail
+          ctx.textAlign = 'right';
           ctx.fillText(
-            (tCdf(-crit, df)).toFixed(3),
-            xAxis.getPixelForValue(3),
+            `Tail: ${tCdf(-tCritValue, tDf).toFixed(3)}`,
+            xAxis.getPixelForValue(4.5),
             yAxis.getPixelForValue(0.025)
           );
+
           ctx.restore();
         }
       }]
