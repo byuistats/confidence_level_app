@@ -441,6 +441,24 @@ function drawTChart(crit, df) {
             yAxis.getPixelForValue(0.025)
           );
 
+          // Label -tCritValue
+          ctx.font = '14px Arial';
+          ctx.fillStyle = 'blue';
+          ctx.textAlign = 'right';
+          ctx.fillText(
+            `-t = ${tCritValue.toFixed(2)}`,
+            xAxis.getPixelForValue(-tCritValue) - 5,
+            yAxis.getPixelForValue(0.43)
+          );
+
+          // Label +tCritValue
+          ctx.textAlign = 'left';
+          ctx.fillText(
+            `t = ${tCritValue.toFixed(2)}`,
+            xAxis.getPixelForValue(tCritValue) + 5,
+            yAxis.getPixelForValue(0.43)
+          );
+
           ctx.restore();
         }
       }]
