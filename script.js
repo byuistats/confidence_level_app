@@ -247,3 +247,238 @@ slider.addEventListener('input', function () {
   confInput.value = conf;
   drawChart(critValue);
 });
+
+// --- Tab switching logic ---
+document.getElementById('normalTab').onclick = function() {
+  document.getElementById('normalTab').classList.add('active');
+  document.getElementById('tTab').classList.remove('active');
+  document.getElementById('normalContent').classList.remove('hidden');
+  document.getElementById('tContent').classList.add('hidden');
+};
+document.getElementById('tTab').onclick = function() {
+  document.getElementById('tTab').classList.add('active');
+  document.getElementById('normalTab').classList.remove('active');
+  document.getElementById('tContent').classList.remove('hidden');
+  document.getElementById('normalContent').classList.add('hidden');
+};
+
+// --- Student's t-distribution logic ---
+
+// PDF for Student's t-distribution
+function tDensity(x, df) {
+  // Gamma function approximation
+  function gamma(z) {
+    // Lanczos approximation
+    const g = 7;
+    const p = [
+      0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+      771.32342877765313, -176.61502916214059, 12.507343278686905,
+      -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+    ];
+    if(z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+    z -= 1;
+    let x = p[0];
+    for(let i = 1; i < g + 2; i++) x += p[i] / (z + i);
+    let t = z + g + 0.5;
+    return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+  }
+  let num = gamma((df + 1) / 2);
+  let denom = Math.sqrt(df * Math.PI) * gamma(df / 2);
+  return num / denom * Math.pow(1 + (x * x) / df, -(df + 1) / 2);
+}
+
+// CDF for Student's t-distribution (using numerical integration)
+function tCdf(x, df) {
+  return jStat.studentt.cdf(x, df);
+}
+
+// Inverse CDF for Student's t-distribution (bisection method)
+function tInv(p, df) {
+  return jStat.studentt.inv(p, df);
+}
+
+// Generate t-distribution data
+function getTData(df) {
+  const tx = [], ty = [];
+  const N = 1000;
+  for (let i = 0; i < N; i++) {
+    let xi = -4 + (8 * i) / (N - 1);
+    tx.push(xi);
+    ty.push(tDensity(xi, df));
+  }
+  return { tx, ty };
+}
+
+// Chart.js for t-distribution
+const tCtx = document.getElementById('tChart').getContext('2d');
+let tChart;
+let tCritValue = 2.23;
+let tDf = 10;
+let tConf = 95;
+
+function drawTChart(crit, df) {
+  const { tx, ty } = getTData(df);
+  const left = tx.map((xi, i) => (xi <= -crit ? ty[i] : null));
+  const center = tx.map((xi, i) => (xi > -crit && xi < crit ? ty[i] : null));
+  const right = tx.map((xi, i) => (xi >= crit ? ty[i] : null));
+
+  if (tChart) tChart.destroy();
+
+  tChart = new Chart(tCtx, {
+    type: 'line',
+    data: {
+      labels: tx,
+      datasets: [
+        {
+          label: "t Curve",
+          data: ty,
+          borderColor: 'black',
+          borderWidth: 2,
+          fill: false,
+          pointRadius: 0,
+        },
+        {
+          label: 'Left Tail',
+          data: left,
+          backgroundColor: 'rgba(255,0,0,0.3)',
+          borderColor: 'rgba(255,0,0,0.0)',
+          fill: true,
+          pointRadius: 0,
+        },
+        {
+          label: 'Center',
+          data: center,
+          backgroundColor: 'rgba(0,0,255,0.3)',
+          borderColor: 'rgba(0,0,255,0.0)',
+          fill: true,
+          pointRadius: 0,
+        },
+        {
+          label: 'Right Tail',
+          data: right,
+          backgroundColor: 'rgba(255,0,0,0.3)',
+          borderColor: 'rgba(255,0,0,0.0)',
+          fill: true,
+          pointRadius: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: `Student's t-Distribution (df = ${df}) with Tails Beyond ±${crit.toFixed(2)}`,
+        },
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: true, text: 't-score' },
+          min: -4,
+          max: 4,
+          ticks: {
+            stepSize: 1,
+            callback: function(value) {
+              if ([-4, -3, -2, -1, 0, 1, 2, 3, 4].includes(value)) {
+                return Math.round(value).toString();
+              }
+              return '';
+            }
+          }
+        },
+        y: {
+          display: false,
+          min: 0,
+          max: 0.45,
+        },
+      },
+      plugins: [{
+        id: 'custom-annotations-t',
+        afterDraw: (chart) => {
+          const ctx = chart.ctx;
+          const xAxis = chart.scales.x;
+          const yAxis = chart.scales.y;
+          ctx.save();
+          ctx.font = 'bold 16px Arial';
+          ctx.fillStyle = 'black';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            `${(100 * (1 - 2 * (1 - tCdf(crit, df)))).toFixed(1)}% Confidence`,
+            xAxis.getPixelForValue(0),
+            yAxis.getPixelForValue(0.42)
+          );
+          ctx.font = '14px Arial';
+          ctx.fillStyle = 'blue';
+          ctx.fillText(
+            `-${crit.toFixed(2)}`,
+            xAxis.getPixelForValue(-crit) - 20,
+            yAxis.getPixelForValue(0.43)
+          );
+          ctx.fillText(
+            `${crit.toFixed(2)}`,
+            xAxis.getPixelForValue(crit) + 20,
+            yAxis.getPixelForValue(0.43)
+          );
+          ctx.fillStyle = 'red';
+          ctx.fillText(
+            (tCdf(-crit, df)).toFixed(3),
+            xAxis.getPixelForValue(-3),
+            yAxis.getPixelForValue(0.025)
+          );
+          ctx.fillText(
+            (tCdf(-crit, df)).toFixed(3),
+            xAxis.getPixelForValue(3),
+            yAxis.getPixelForValue(0.025)
+          );
+          ctx.restore();
+        }
+      }]
+    }
+  });
+}
+
+// --- t-distribution controls ---
+const tConfInput = document.getElementById('tConfLevel');
+const tDfInput = document.getElementById('df');
+const tSlider = document.getElementById('tCritValue');
+const tLabel = document.getElementById('tCritValueLabel');
+
+tConfInput.addEventListener('input', function () {
+  let conf = parseFloat(this.value);
+  // Only update if input is a valid number in range
+  if (!isNaN(conf) && conf >= 50 && conf <= 99.9) {
+    let alpha = 1 - conf / 100;
+    let crit = Math.abs(tInv(1 - alpha / 2, tDf));
+    tCritValue = crit;
+    tSlider.value = crit.toFixed(2);
+    tLabel.textContent = crit.toFixed(2);
+    drawTChart(tCritValue, tDf);
+  }
+  // If invalid or empty, do nothing and let the user finish editing
+});
+
+tDfInput.addEventListener('input', function () {
+  tDf = parseInt(this.value);
+  let conf = parseFloat(tConfInput.value);
+  let alpha = 1 - conf / 100;
+  let crit = Math.abs(tInv(1 - alpha / 2, tDf));
+  tCritValue = crit;
+  tSlider.value = crit.toFixed(2);
+  tLabel.textContent = crit.toFixed(2);
+  drawTChart(tCritValue, tDf);
+});
+
+tSlider.addEventListener('input', function () {
+  tCritValue = parseFloat(this.value);
+  tLabel.textContent = tCritValue.toFixed(2);
+  // Correct confidence level calculation:
+  let conf = (100 * (tCdf(tCritValue, tDf) - tCdf(-tCritValue, tDf))).toFixed(2);
+  tConfInput.value = conf;
+  drawTChart(tCritValue, tDf);
+});
+
+// Initial draw
+drawTChart(tCritValue, tDf);

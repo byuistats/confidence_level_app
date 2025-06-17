@@ -2,19 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Normal Distribution Confidence Level</title>
+  <title>Distribution Confidence Applet</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .tab { display: inline-block; padding: 8px 16px; cursor: pointer; border: 1px solid #ccc; border-bottom: none; }
+    .tab.active { background: #f0f0f0; font-weight: bold; }
+    .tab-content { border: 1px solid #ccc; padding: 16px; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-  <h2>Standard Normal Distribution with Adjustable Critical Value</h2>
-  <label for="confLevel">Confidence Level (%): </label>
-  <input type="number" id="confLevel" min="50" max="99.9" step="0.1" value="95">
-  <br>
-  <label for="critValue">Critical Value (z): </label>
-  <input type="range" id="critValue" min="1" max="3" step="0.01" value="1.96">
-  <span id="critValueLabel">1.96</span>
-  <canvas id="normalChart" width="700" height="400"></canvas>
+  <div>
+    <span class="tab active" id="normalTab">Normal</span>
+    <span class="tab" id="tTab">Student's t</span>
+  </div>
+  <div id="normalContent" class="tab-content">
+    <label for="confLevel">Confidence Level (%): </label>
+    <input type="number" id="confLevel" min="50" max="99.9" step="0.1" value="95">
+    <br>
+    <label for="critValue">Critical Value (z): </label>
+    <input type="range" id="critValue" min="1" max="3" step="0.01" value="1.96">
+    <span id="critValueLabel">1.96</span>
+    <canvas id="normalChart" width="700" height="400"></canvas>
+  </div>
+  <div id="tContent" class="tab-content hidden">
+    <label for="tConfLevel">Confidence Level (%): </label>
+    <input type="number" id="tConfLevel" min="50" max="99.9" step="0.1" value="95">
+    <br>
+    <label for="df">Degrees of Freedom: </label>
+    <input type="number" id="df" min="1" max="500" step="1" value="10">
+    <br>
+    <label for="tCritValue">Critical Value (t): </label>
+    <input type="range" id="tCritValue" min="1" max="5" step="0.01" value="2.23">
+    <span id="tCritValueLabel">2.23</span>
+    <canvas id="tChart" width="700" height="400"></canvas>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
