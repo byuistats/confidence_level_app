@@ -125,4 +125,17 @@ function update() {
         })
     }
     // Create the layout 
+    const layout = {
+        title: 'Standard Normal Distribution with Shaded Regions',
+        xaxis: {
+            title: 'Z',
+            range: [-4, 4]
+        },
+        yaxis: {
+            title: 'Probability Density',
+            range: [0, 0.5]
+        },
+        annotations: annotations,
+        showlegend: false
+    }; 
 }
