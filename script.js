@@ -17,7 +17,7 @@ const x = [];
 const y = [];
 const N = 1000;
 for (let i = 0; i < N; i++) {
-  let xi = -4 + (8 * i) / (N - 1);
+  let xi = -4 + (8 * i) / (N - 1); // Now from -4 to 4
   x.push(xi);
   y.push(normalDensity(xi));
 }
@@ -39,9 +39,27 @@ function erf(x) {
     return sign*y;
 }
 
+function inverseErf(x) {
+  // Approximation of inverse error function
+  // Source: https://stackoverflow.com/a/49766115
+  let a = 0.147;
+  let the_sign_of_x = x < 0 ? -1 : 1;
+  let ln1minusxsqrd = Math.log(1 - x * x);
+  let firstPart = (2 / (Math.PI * a)) + (ln1minusxsqrd / 2);
+  let secondPart = ln1minusxsqrd / a;
+  return the_sign_of_x * Math.sqrt(Math.sqrt(firstPart * firstPart - secondPart) - firstPart);
+}
+
 // Calculate the CDF for standard normal
 function cdf(z) {
     return 0.5 * (1 + erf(z/Math.sqrt(2)));
+}
+
+// Inverse CDF for standard normal
+function normalInv(p) {
+  // p between 0 and 1
+  if (p <= 0 || p >= 1) return NaN;
+  return Math.sqrt(2) * inverseErf(2 * p - 1);
 }
 
 function getShadedData(crit) {
@@ -100,6 +118,7 @@ function drawChart(crit) {
     },
     options: {
       responsive: false,
+      animation: false, // <-- Add this line to turn off animation
       plugins: {
         legend: { display: false },
         title: {
@@ -129,12 +148,23 @@ function drawChart(crit) {
       },
       scales: {
         x: {
+          type: 'linear', // <-- Add this line
           title: { display: true, text: 'z-score' },
           min: -4,
           max: 4,
+          ticks: {
+            stepSize: 1,
+            callback: function(value) {
+              // Only show ticks at -4, -3, -2, -1, 0, 1, 2, 3, 4, rounded to 0 decimals
+              if ([-4, -3, -2, -1, 0, 1, 2, 3, 4].includes(value)) {
+                return Math.round(value).toString();
+              }
+              return '';
+            }
+          }
         },
         y: {
-          title: { display: true, text: 'Density' },
+          display: false,
           min: 0,
           max: 0.45,
         },
@@ -192,10 +222,28 @@ function normalCdf(z) {
 
 drawChart(critValue);
 
+const confInput = document.getElementById('confLevel');
+const confLabel = document.getElementById('confLevelLabel');
 const slider = document.getElementById('critValue');
 const label = document.getElementById('critValueLabel');
+
+confInput.addEventListener('input', function () {
+  let conf = parseFloat(this.value);
+  if (isNaN(conf) || conf <= 50 || conf >= 100) return;
+  let alpha = 1 - conf / 100;
+  // Two-tailed, so area in each tail is alpha/2
+  let crit = Math.abs(normalInv(1 - alpha / 2));
+  critValue = crit;
+  slider.value = crit.toFixed(2);
+  label.textContent = crit.toFixed(2);
+  drawChart(critValue);
+});
+
 slider.addEventListener('input', function () {
   critValue = parseFloat(this.value);
   label.textContent = critValue.toFixed(2);
+  // Update confidence level box to match slider
+  let conf = (100 * (1 - 2 * (1 - normalCdf(critValue)))).toFixed(2);
+  confInput.value = conf;
   drawChart(critValue);
 });
