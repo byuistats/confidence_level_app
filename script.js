@@ -124,4 +124,5 @@ function update() {
             font: { color: 'red' }
         })
     }
-    // Create the layout
+    // Create the layout 
+}
